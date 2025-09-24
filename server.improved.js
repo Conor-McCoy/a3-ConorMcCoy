@@ -15,6 +15,7 @@ app.use(session({
     saveUninitialized: true,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI
+    })
 }));
 
 //mongodb

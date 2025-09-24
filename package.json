@@ -3,6 +3,7 @@
   "version": "2.0",
   "description": "A To-Do List",
   "author": "Conor McCoy",
+  "main": "server.improved.js",
   "scripts": {
     "start": "node server.improved.js"
   },

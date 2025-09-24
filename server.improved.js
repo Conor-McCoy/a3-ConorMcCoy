@@ -9,7 +9,7 @@ const port = process.env.PORT || 3000;
 app.use(express.static("public"));
 app.use(express.json());
 app.use(session({
-    secret: 'secret-key-CHANGE', //change
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true
 }));

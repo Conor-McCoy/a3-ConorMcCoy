@@ -1,133 +1,204 @@
-// FRONT-END (CLIENT) JAVASCRIPT HERE
+//ui helpers to show/hide forms if user is logged in/not logged in
 
-// const submit = async function( event ) {
-//   // stop form submission from trying to load
-//   // a new .html page for displaying results...
-//   // this was the original browser behavior and still
-//   // remains to this day
-//   event.preventDefault()
+const showApp = () => {
+  document.getElementById('authContainer').classList.add('hidden');
+  document.getElementById('appContainer').classList.remove('hidden');
+};
 
-//task display + loading
+const showAuth = () => {
+  document.getElementById('appContainer').classList.add('hidden');
+  document.getElementById('authContainer').classList.remove('hidden');
+};
+
+// helper function to show username of logged in user
+const updateWelcomeMessage = (username) => {
+  document.getElementById('welcomeUser').textContent = username;
+};
+
+//task functions
+
+// load & display tasks for logged in user
 const loadTasks = async () => {
   const response = await fetch('/tasks');
+  if (!response.ok) {
+    showAuth();
+    return;
+  }
+
   const tasks = await response.json();
   const taskTableBody = document.getElementById('taskTableBody');
-
-  //clear table
   taskTableBody.innerHTML = '';
 
-  tasks.forEach((task, index) => {
+  tasks.forEach(task => {
     const row = document.createElement('tr');
-
-    //priority update dropdown
     const priorities = ["Urgent", "High", "Medium", "Low"];
-    let optionsHtml = priorities.map(p =>
-        //don't update if its same
+    const optionsHtml = priorities.map(p =>
         `<option value="${p}" ${task.priority === p ? 'selected' : ''}>${p}</option>`
     ).join('');
-
-    //add priority to class for styling
-    const priorityCellHTML = `
-      <td>
-        <select class="priority-select priority-${task.priority}" data-index="${index}">
-          ${optionsHtml}
-        </select>
-      </td>
-    `;
 
     const createdDate = new Date(task.dateCreated).toLocaleDateString();
     const deadlineDate = new Date(task.suggestedDeadline).toLocaleDateString();
 
-    //display task data, priority format different for styling on value
     row.innerHTML = `
       <td>${task.task}</td>
-      ${priorityCellHTML}
+      <td>
+        <select class="priority-select" aria-label="Change task priority" data-id="${task._id}">${optionsHtml}</select> <!-- dropdown to update task priority -->
+      </td>
       <td>${createdDate}</td>
       <td>${deadlineDate}</td>
-      <td><input type="checkbox" class="complete-checkbox" data-index="${index}"></td>
+      <td>
+            <input type="checkbox" class="complete-checkbox" aria-label="Mark task as complete" data-id="${task._id}">
+      </td>
     `;
-
     taskTableBody.appendChild(row);
   });
 };
 
-// form submission
-const submit = async function( event ) {
-  // stop form submission from trying to load
-  // a new .html page for displaying results...
-  // this was the original browser behavior and still
-  // remains to this day
-  event.preventDefault()
-
-  const taskInput = document.querySelector("#task");
+// task submission
+const submit = async (event) => {
+  event.preventDefault();
+  const taskInput = document.getElementById("task");
   const priorityInput = document.querySelector('input[name="priority"]:checked');
 
-  //only add task if its not blank
-  if(taskInput.value !== "") {
-    const json = {
-      task: taskInput.value,
-      priority: priorityInput.value
-    };
-
-    const body = JSON.stringify(json);
-
+  if (taskInput.value.trim() !== "") {
     await fetch("/submit", {
       method: "POST",
-      body
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        task: taskInput.value,
+        priority: priorityInput.value
+      })
     });
-
-    //clear form, update task display
     taskInput.value = "";
     loadTasks();
   }
 };
 
-const completeTask = async function(event) {
-  if(event.target.classList.contains('complete-checkbox')) {
-    const taskIndex = event.target.dataset.index;
-
-    const json = { index: taskIndex };
-    const body = JSON.stringify(json);
-
+// task deletion
+const completeTask = async (event) => {
+  if (event.target.classList.contains('complete-checkbox')) {
+    const taskId = event.target.dataset.id;
     await fetch("/delete", {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
-      body
+      body: JSON.stringify({ id: taskId })
     });
-
-    //update to reflect delete
-    loadTasks();
-  }
-}
-
-const updatePriority = async function(event) {
-  if (event.target.classList.contains('priority-select')) {
-    const taskIndex = event.target.dataset.index;
-    const newPriority = event.target.value;
-
-    const json = { index: taskIndex, priority: newPriority };
-    const body = JSON.stringify(json);
-
-    await fetch("/update", {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body
-    });
-
-    // update task list
     loadTasks();
   }
 };
 
-window.onload = function() {
-  const form = document.querySelector("#todoForm");
-  form.onsubmit = submit;
+// task updating
+const updatePriority = async (event) => {
+  if (event.target.classList.contains('priority-select')) {
+    const taskId = event.target.dataset.id;
+    const newPriority = event.target.value;
+    await fetch("/update", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: taskId, priority: newPriority })
+    });
+    loadTasks();
+  }
+};
 
+// user authentication
 
-  const taskTableBody = document.getElementById('taskTableBody');
-  taskTableBody.onclick = completeTask;
-  taskTableBody.onchange = updatePriority;
+// reigstration form submission
+const handleRegister = async (event) => {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
 
-  // load saved tasks
-  loadTasks();
+  const response = await fetch('/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (response.ok) {
+    const responseData = await response.json();
+    updateWelcomeMessage(responseData.username);
+    showApp();
+    loadTasks();
+  } else {
+    alert('Registration failed! The username may be taken.');
+  }
+};
+
+//login form submission
+const handleLogin = async (event) => {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+
+  const response = await fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (response.ok) {
+    const responseData = await response.json();
+    updateWelcomeMessage(responseData.username);
+    showApp();
+    loadTasks();
+  } else {
+    alert('Login failed! Please check your username and password.');
+  }
+};
+
+// Handles the logout button click
+const handleLogout = async () => {
+  const response = await fetch('/logout', { method: 'POST' });
+  if (response.ok) {
+    showAuth();
+  } else {
+    alert('Logout failed!');
+  }
+};
+
+// main setup
+window.onload = () => {
+
+  const setupEventListeners = () => {
+    // auth view
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) loginForm.onsubmit = handleLogin;
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) registerForm.onsubmit = handleRegister;
+
+    // app view
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) logoutButton.onclick = handleLogout;
+
+    const todoForm = document.getElementById("todoForm");
+    if (todoForm) todoForm.onsubmit = submit;
+
+    const taskTableBody = document.getElementById('taskTableBody');
+    if (taskTableBody) {
+      taskTableBody.onclick = completeTask;
+      taskTableBody.onchange = updatePriority;
+    }
+  };
+
+  const checkLoginStatus = async () => {
+    const response = await fetch('/api/session/status');
+    const data = await response.json();
+
+    if (data.loggedIn) {
+      updateWelcomeMessage(data.username);
+      showApp();
+      loadTasks();
+    } else {
+      showAuth();
+    }
+
+    setupEventListeners();
+  };
+
+  // start
+  checkLoginStatus();
 };

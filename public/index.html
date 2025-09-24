@@ -1,48 +1,105 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>CS4241 Assignment 2</title>
-    <meta charset="utf-8">
-    <script src="js/main.js"></script>
-    <link rel="stylesheet" href="css/main.css">
-    
-    <!-- get rid of favicon error -->
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-  </head>
-  <body>
-  <main>
-  <h1>My To-Do List</h1>
-  <!-- Todo list: Task, Priority (Urgent, High, Medium, Low), DateCreated (server auto), SuggestedDeadline (DateCreated + Priority (Urgent: 1 Day, High: 2 Days, Medium: 1 Week, Low: 1 Month) -->
-    <form id="todoForm">
-      <label for="task">Enter your task:</label>
-      <input type="text" id="task" placeholder="e.g., Finish a2"/>
-      <input type="radio" id="urgent" name="priority" value="Urgent"/>
-      <label for="urgent">Urgent</label>
-      <input type="radio" id="high" name="priority" value="High"/>
-      <label for="high">High</label>
-      <input type="radio" id="medium" name="priority" value="Medium" checked/>
-      <label for="medium">Medium</label>
-      <input type="radio" id="low" name="priority" value="Low"/>
-      <label for="low">Low</label>
+<head>
+  <title>CS4241 To-Do App</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A simple to-do list application for managing your daily tasks. Built with Node.js and MongoDB.">
 
-      <button id="submitButton">Add Task</button>
-    </form>
-  <h2>Current Tasks</h2>
-  <table id="taskTable">
-    <thead>
-    <tr>
-      <th>Task</th>
-      <th>Priority</th>
-      <th>Date Created</th>
-      <th>Suggested Deadline</th>
-      <th>Completed?</th>
-    </tr>
-    </thead>
-    <tbody id="taskTableBody">
-    </tbody>
-  </table>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
 
-  <script src="js/main.js"></script>
-  </main>
-  </body>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+</head>
+<body>
+ <!-- split into containers for separate login page, have hidden form when not logged in, hidden login when logged in. -->
+<main class="container">
+
+  <section id="authContainer">
+    <hgroup>
+      <h1>Welcome!</h1>
+      <h2>Please log in or register to continue.</h2>
+    </hgroup>
+
+    <article>
+      <form id="loginForm">
+        <h2>Login</h2>
+        <label for="loginUsername">Username</label>
+        <input type="text" id="loginUsername" name="username" required>
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" name="password" required>
+        <button type="submit">Log In</button>
+      </form>
+
+      <form id="registerForm">
+        <h2>Register</h2>
+        <label for="registerUsername">Username</label>
+        <input type="text" id="registerUsername" name="username" required>
+        <label for="registerPassword">Password</label>
+        <input type="password" id="registerPassword" name="password" required>
+        <button type="submit">Register</button>
+      </form>
+    </article>
+  </section>
+
+
+  <!-- Header (title, welcome message, logout button) -->
+  <section id="appContainer" class="hidden">
+    <header>
+      <hgroup>
+        <h1>My To-Do List</h1>
+        <h2>Welcome, <span id="welcomeUser"></span>!</h2>
+      </hgroup>
+      <button id="logoutButton" class="secondary">Logout</button>
+    </header>
+
+
+    <!-- todo list form -->
+    <article>
+      <form id="todoForm">
+        <label for="task">New task:</label>
+        <input type="text" id="task" name="task" placeholder="e.g., Finish a3" required/>
+
+        <fieldset>
+          <legend>Priority</legend>
+          <label for="urgent"><input type="radio" id="urgent" name="priority" value="Urgent"/> Urgent</label>
+          <label for="high"><input type="radio" id="high" name="priority" value="High"/> High</label>
+          <label for="medium"><input type="radio" id="medium" name="priority" value="Medium" checked/> Medium</label>
+          <label for="low"><input type="radio" id="low" name="priority" value="Low"/> Low</label>
+        </fieldset>
+
+        <button type="submit" id="submitButton">Add Task</button>
+      </form>
+    </article>
+
+
+    <!-- Task display -->
+    <article> <!-- pico adds extra styling with articles -->
+      <h2>Current Tasks</h2>
+      <div>
+        <table id="taskTable">
+          <thead>
+          <tr>
+            <th>Task</th>
+            <th>Priority</th>
+            <th>Date Created</th>
+            <th>Suggested Deadline</th>
+            <th>Completed?</th>
+          </tr>
+          </thead>
+          <tbody id="taskTableBody">
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</main>
+
+<script src="js/main.js"></script>
+</body>
 </html>

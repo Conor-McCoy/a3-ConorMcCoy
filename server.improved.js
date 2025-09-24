@@ -59,9 +59,9 @@ async function run() {
         allTasks = client.db("todoDB").collection("tasks");
         allUsers = client.db("todoDB").collection("users");
 
-        app.listen(port, () => {
-            console.log(`Server is running on http://localhost:${port}`);
-        });
+        // app.listen(port, () => {
+        //     console.log(`Server is running on http://localhost:${port}`);
+        // });
 
     } catch (err) {
         console.error("Failed to connect to mongoDB", err);
@@ -188,3 +188,5 @@ app.post("/update", async (req, res) => {
     await allTasks.updateOne(filter, updateDoc);
     res.status(200).json({ message: "Task updated successfully." });
 });
+
+module.exports = app;

@@ -3,7 +3,7 @@ A full-stack to-do list application built with Node.js, Express, and a persisten
 
 One of the main challenges was coordinating the full-stack authentication. Ensuring the server correctly created and managed user sessions with express-session, while also making the client-side JavaScript securely handle the login state, required careful planning. Specifically, creating a dedicated /api/session/status endpoint was a key step to reliably check the user's login status on page load without triggering console errors, which was necessary to achieve a perfect Lighthouse score.
 
-PUT VERCEL LINK HERE
+https://a3-conormccoy.vercel.app/
 
 ## Login Guide
 - **To test the application, you will first need to register a new account using the registration form.**
